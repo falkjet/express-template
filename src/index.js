@@ -3,8 +3,11 @@ console.clear();
 const glob = require("glob");
 const app = require("./app");
 const { join, relative } = require("path");
+const { mongoClient } = require("./database");
 
 async function main() {
+  await mongoClient.connect();
+
   const promises = glob
     .sync(join(__dirname, "routes/**/*.{jsx,js}"))
     .map(async (path) => {
@@ -25,6 +28,7 @@ async function main() {
   console.log("listening on \x1b[36mhttp://localhost:3000\x1b[0m");
   process.on("SIGTERM", () => {
     server.close(() => console.log("server closed"));
+    mongoClient.close();
   });
 }
 
