@@ -53,8 +53,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use("/public", express.static("./public"));
-// app.use(expressSession(sessionConfig));
-// app.use(passport.authenticate("session"));
+app.use("/public", express.static("./public"));
+app.use(expressSession(sessionConfig));
+app.use(express.urlencoded({ extended: false }));
+app.use(csurf());
+app.use(passport.authenticate("session"));
 
 module.exports = app;

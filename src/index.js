@@ -11,15 +11,16 @@ async function main() {
   const promises = glob
     .sync(join(__dirname, "routes/**/*.{jsx,js}"))
     .map(async (path) => {
-      const module = await import(path);
+      const mod = (await import(path)).default;
       path = join("/", relative(join(__dirname, "routes"), path));
       if (path.endsWith(".jsx")) path = path.substring(0, path.length - 4);
       if (path.endsWith(".js")) path = path.substring(0, path.length - 3);
       if (path.endsWith("index")) path = path.substring(0, path.length - 5);
 
       for (let method of ["get", "post", "put", "patch", "delete"])
-        if (module[method])
-          app[method](path, ...(module.middleware || []), module[method]);
+        if (mod[method]) {
+          app[method](path, ...(mod.middleware || []), mod[method].bind(mod));
+        }
     });
 
   await Promise.all(promises);
