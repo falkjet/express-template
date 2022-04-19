@@ -10,7 +10,18 @@ function navbar(req) {
       <div class="navbar-menu">
         <div class="navbar-end">
           $${req.user
-            ? html`<a href="/logout" class="navbar-item">Log Out</a>`
+            ? html`
+                <form method="post" action="/logout" class="navbar-item">
+                  <input
+                    type="hidden"
+                    name="_csrf"
+                    value="${req.csrfToken()}"
+                  />
+                  <button type="submit" class="button is-white is-outlined">
+                    Log Out
+                  </button>
+                </form>
+              `
             : html`<a href="/login" class="navbar-item">Log In</a>
                 <a href="/register" class="navbar-item">Register</a>`}
         </div>
