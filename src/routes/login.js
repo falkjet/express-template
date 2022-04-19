@@ -56,6 +56,7 @@ module.exports = {
       await promisify(req.login.bind(req))(user);
       res.redirect("/");
     } else {
+      req.error = "Wrong username or password";
       this.get(req, res);
     }
   },
