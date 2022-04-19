@@ -11,7 +11,8 @@ function navbar(req) {
         <div class="navbar-end">
           $${req.user
             ? html`<a href="/logout" class="navbar-item">Log Out</a>`
-            : html`<a href="/login" class="navbar-item">Log In</a>`}
+            : html`<a href="/login" class="navbar-item">Log In</a>
+                <a href="/register" class="navbar-item">Register</a>`}
         </div>
       </div>
     </div>
