@@ -4,7 +4,7 @@ function navbar(req) {
   return html`
     <div class="navbar is-dark">
       <div class="navbar-brand">
-        <div class="navbar-item">Website</div>
+        <a href="/" class="navbar-item has-text-weight-bold">Website</a>
         <div class="navbar-burger"><span></span><span></span><span></span></div>
       </div>
       <div class="navbar-menu">
