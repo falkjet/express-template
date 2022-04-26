@@ -9,26 +9,24 @@ async function main() {
   await mongoClient.connect();
 
   const promises = glob
-    .sync(join(__dirname, "routes/**/*.{js,js,mjs,cjs}"))
+    .sync(join(__dirname, "routes/**/*.{js,mjs,cjs}"))
     .map(async (path) => {
       const mod = await import(path);
       path = join("/", relative(join(__dirname, "routes"), path));
-      if (path.endsWith(".jsx")) path = path.substring(0, path.length - 4);
-      if (path.endsWith(".js")) path = path.substring(0, path.length - 3);
-      if (path.endsWith(".mjs")) path = path.substring(0, path.length - 4);
-      if (path.endsWith(".cjs")) path = path.substring(0, path.length - 4);
+      path = path.substring(0, path.lastIndexOf("."));
       if (path.endsWith("index")) path = path.substring(0, path.length - 5);
 
+      const middleware = [
+        ...(mod.middleware || []),
+        ...((mod.default && mod.default.middleware) || []),
+      ];
+      if (middleware.length) app.use(...middleware);
       for (let method of ["get", "post", "put", "patch", "delete"]) {
         if (mod[method]) {
-          app[method](path, ...(mod.middleware || []), mod[method].bind(mod));
+          app[method](path, mod[method].bind(mod));
         }
         if (method in (mod.default || {})) {
-          app[method](
-            path,
-            ...(mod.default.middleware || []),
-            mod.default[method].bind(mod.default)
-          );
+          app[method](path, mod.default[method].bind(mod.default));
         }
       }
     });
