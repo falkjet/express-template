@@ -11,13 +11,21 @@ function navbar(req) {
         <div class="navbar-end">
           $${req.user
             ? html`
-                <form method="post" action="/logout" class="navbar-item">
+                <form
+                  class="navbar-item navbar-link is-arrowless"
+                  method="post"
+                  action="/logout"
+                  onclick="this.submit()"
+                >
                   <input
                     type="hidden"
                     name="_csrf"
                     value="${req.csrfToken()}"
                   />
-                  <button type="submit" class="button is-white is-outlined">
+                  <button
+                    type="submit"
+                    style="all: unset; background-color: transparent"
+                  >
                     Log Out
                   </button>
                 </form>
