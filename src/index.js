@@ -2,12 +2,9 @@ console.clear();
 
 const glob = require("glob");
 const app = require("./app");
-const { join, relative, dirname, sep } = require("path/posix");
+const { join, relative, sep } = require("path/posix");
 const nativepath = require("path");
 const { mongoClient } = require("./database");
-const { chdir } = require("process");
-
-const pathtoposix = (path) => path.split(nativepath.sep).join(sep);
 
 async function main() {
   await mongoClient.connect();
