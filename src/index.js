@@ -2,17 +2,26 @@ console.clear();
 
 const glob = require("glob");
 const app = require("./app");
-const { join, relative } = require("path");
+const { join, relative, dirname, sep } = require("path/posix");
+const nativepath = require("path");
 const { mongoClient } = require("./database");
+const { chdir } = require("process");
+
+const pathtoposix = (path) => path.split(nativepath.sep).join(sep);
 
 async function main() {
   await mongoClient.connect();
 
+  const dirname = nativepath
+    .relative(process.cwd(), __dirname)
+    .split(nativepath.sep)
+    .join(sep);
   const promises = glob
-    .sync(join(__dirname, "routes/**/*.{js,mjs,cjs}"))
+    .sync(join(dirname, "routes/**/*.{js,mjs,cjs}"))
     .map(async (path) => {
-      const mod = await import(path);
-      path = join("/", relative(join(__dirname, "routes"), path));
+      const importpath = "./" + relative(dirname, path);
+      const mod = await import(importpath);
+      path = join("/", relative(join(dirname, "routes"), path));
       path = path.substring(0, path.lastIndexOf("."));
       if (path.endsWith("index")) path = path.substring(0, path.length - 5);
 
