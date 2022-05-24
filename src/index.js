@@ -21,6 +21,7 @@ async function main() {
       path = join("/", relative(join(dirname, "routes"), path));
       path = path.substring(0, path.lastIndexOf("."));
       if (path.endsWith("index")) path = path.substring(0, path.length - 5);
+      path = path.replaceAll(/\/_/g, "/:");
 
       const middleware = [
         ...(mod.middleware || []),
