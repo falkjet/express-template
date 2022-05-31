@@ -2,9 +2,10 @@ console.clear();
 
 const glob = require("glob");
 const app = require("./app");
-const { join, relative, sep } = require("path/posix");
+const { join, relative, sep, isAbsolute } = require("path/posix");
 const nativepath = require("path");
 const { mongoClient } = require("./database");
+const { config } = require("process");
 
 async function main() {
   await mongoClient.connect();
@@ -20,7 +21,13 @@ async function main() {
       const mod = await import(importpath);
       path = join("/", relative(join(dirname, "routes"), path));
       path = path.substring(0, path.lastIndexOf("."));
-      if (path.endsWith("index")) path = path.substring(0, path.length - 5);
+      const configuredPath = mod.path || (mod.default && mod.default.path);
+      if (configuredPath) {
+        if (isAbsolute(configuredPath)) path = configuredPath;
+        else path = join(path, "..", configuredPath);
+      } else if (path.endsWith("index")) {
+        path = path.substring(0, path.length - 5);
+      }
 
       const middleware = [
         ...(mod.middleware || []),
