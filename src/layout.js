@@ -11,6 +11,7 @@ function navbar(req) {
         <div class="navbar-end">
           $${req.user
             ? html`
+                <a href="/users" class="navbar-item">Users</a>
                 <form
                   class="navbar-item navbar-link is-arrowless"
                   method="post"
