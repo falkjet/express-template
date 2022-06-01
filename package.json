@@ -4,7 +4,8 @@
   "description": "Project template for express projects",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -q --signal SIGTERM -r dotenv/config src/index.js"
+    "dev": "nodemon -q --signal SIGTERM -r dotenv/config src/index.js",
+    "prod": "NODE_ENV=production node -r dotenv/config src/index.js"
   },
   "repository": {
     "type": "git",

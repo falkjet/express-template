@@ -6,6 +6,7 @@ const { join, relative, sep, isAbsolute } = require("path/posix");
 const nativepath = require("path");
 const { mongoClient } = require("./database");
 const { config } = require("process");
+const errorhandler = require("./errorhandler");
 
 async function main() {
   await mongoClient.connect();
@@ -33,18 +34,46 @@ async function main() {
         ...(mod.middleware || []),
         ...((mod.default && mod.default.middleware) || []),
       ];
-      if (middleware.length) app.use(...middleware);
+      if (middleware.length)
+        app.use(
+          ...middleware.map((middleware) => async (req, res, next) => {
+            try {
+              const h = middleware;
+              await h(req, res, next);
+            } catch (e) {
+              next(e);
+            }
+          })
+        );
       for (let method of ["get", "post", "put", "patch", "delete"]) {
         if (mod[method]) {
-          app[method](path, mod[method].bind(mod));
+          app[method](path, async (req, res, next) => {
+            try {
+              const h = mod[method].bind(mod);
+              await h(req, res, next);
+            } catch (e) {
+              next(e);
+            }
+          });
         }
         if (method in (mod.default || {})) {
-          app[method](path, mod.default[method].bind(mod.default));
+          app[method](path, async (req, res, next) => {
+            try {
+              const h = mod.default[method].bind(mod.default);
+              await h(req, res, next);
+            } catch (e) {
+              next(e);
+            }
+          });
         }
       }
     });
 
-  await Promise.all(promises);
+  try {
+    await Promise.all(promises);
+  } catch (e) {
+    console.log(e);
+  }
 
   const port = Number.parseInt(process.env.PORT) || 3000;
   const server = app.listen(port);
@@ -53,6 +82,7 @@ async function main() {
     server.close(() => console.log("server closed"));
     mongoClient.close();
   });
+  app.use(errorhandler);
 }
 
 main().catch(console.error);
