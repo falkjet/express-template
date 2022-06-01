@@ -46,8 +46,9 @@ async function main() {
 
   await Promise.all(promises);
 
-  const server = app.listen(3000);
-  console.log("listening on \x1b[36mhttp://localhost:3000\x1b[0m");
+  const port = Number.parseInt(process.env.PORT) || 3000;
+  const server = app.listen(port);
+  console.log(`listening on \x1b[36mhttp://localhost:${port}\x1b[0m`);
   process.on("SIGTERM", () => {
     server.close(() => console.log("server closed"));
     mongoClient.close();
