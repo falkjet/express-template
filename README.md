@@ -6,7 +6,7 @@ Project template for express projects
 
 1.  **Download node.js** from [nodejs.org](https://nodejs.org/en/download/)
 
-2.  **Download MongoDB**. You will need both the [database](https://www.mongodb.com/try/download) and [Compass](https://www.mongodb.com/try/download/tools)
+2.  **Download MongoDB**. You will need both the [database (MongoDB Community Server)](https://www.mongodb.com/try/download) and [MongoDB Compass](https://www.mongodb.com/try/download/tools)
 
 3.  **Download the project template**.
     Click on `code` and then download zip or clone [https://github.com/falkjet/express-template](https://github.com/falkjet/express-template) using git.
