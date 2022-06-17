@@ -1,6 +1,6 @@
-const html = require("html-template-tag");
+import html from "html-template-tag";
 
-function navbar(req) {
+export function navbar(req) {
   return html`
     <div class="navbar is-dark">
       <div class="navbar-brand">
@@ -39,7 +39,7 @@ function navbar(req) {
   `;
 }
 
-function layout({ req, title }, content) {
+export function layout({ req, title }, content) {
   return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -61,5 +61,3 @@ function layout({ req, title }, content) {
     </html>
   `;
 }
-
-module.exports = { navbar, layout };

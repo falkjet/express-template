@@ -1,6 +1,6 @@
-const html = require("html-template-tag");
+import html from "html-template-tag";
 
-module.exports = (err, req, res, next) => {
+export default (err, req, res, next) => {
   res.status(500);
   if (req.app.get("env") !== "development") {
     return res.html`

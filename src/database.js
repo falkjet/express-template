@@ -1,5 +1,4 @@
-const mongodb = require("mongodb");
+import mongodb from "mongodb";
 
-const mongoClient = new mongodb.MongoClient(process.env.MONGODB_URL);
-const database = mongoClient.db();
-module.exports = { mongoClient, database };
+export const mongoClient = new mongodb.MongoClient(process.env.MONGODB_URL);
+export const database = mongoClient.db();

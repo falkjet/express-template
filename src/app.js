@@ -1,13 +1,13 @@
-const express = require("express");
-const html = require("html-template-tag");
-const expressSession = require("express-session");
-const { mongoClient, database } = require("./database");
-const MongoStore = require("connect-mongo");
-const passport = require("passport");
-const LocalStrategy = require("passport-local");
-const { compare } = require("bcrypt");
-const { ObjectId } = require("bson");
-const csurf = require("csurf");
+import express from "express";
+import html from "html-template-tag";
+import expressSession from "express-session";
+import { mongoClient, database } from "./database.js";
+import MongoStore from "connect-mongo";
+import passport from "passport";
+import LocalStrategy from "passport-local";
+import { compare } from "bcrypt";
+import { ObjectId } from "bson";
+import csurf from "csurf";
 
 const sessionConfig = {
   secret: process.env.SECRET,
@@ -36,6 +36,7 @@ passport.deserializeUser(async (id, cb) => {
   cb(null, user || false);
 });
 
+await mongoClient.connect();
 const app = express();
 app.use((req, res, next) => {
   res.once("close", () => {
@@ -59,4 +60,4 @@ app.use(express.urlencoded({ extended: false }));
 app.use(csurf());
 app.use(passport.authenticate("session"));
 
-module.exports = app;
+export default app;

@@ -1,79 +1,55 @@
 console.clear();
 
-const glob = require("glob");
-const app = require("./app");
-const { join, relative, sep, isAbsolute } = require("path/posix");
-const nativepath = require("path");
-const { mongoClient } = require("./database");
-const { config } = require("process");
-const errorhandler = require("./errorhandler");
+import glob from "glob";
+import { dirname, isAbsolute, join, relative } from "path/posix";
+import url from "url";
+import app from "./app.js";
+import { mongoClient } from "./database.js";
+import errorhandler from "./errorhandler.js";
+
+const globUrl = (u) =>
+  glob.sync(url.fileURLToPath(u)).map((p) => url.pathToFileURL(p).href);
+
+const wrapHandler = (handler) => async (req, res, next) => {
+  try {
+    await handler(req, res, next);
+  } catch (e) {
+    next(e);
+  }
+};
 
 async function main() {
-  await mongoClient.connect();
-
-  const dirname = nativepath
-    .relative(process.cwd(), __dirname)
-    .split(nativepath.sep)
-    .join(sep);
-  const promises = glob
-    .sync(join(dirname, "routes/**/*.{js,mjs,cjs}"))
-    .map(async (path) => {
-      const importpath = "./" + relative(dirname, path);
-      const mod = await import(importpath);
-      path = join("/", relative(join(dirname, "routes"), path));
+  const rootUrl = dirname(import.meta.url);
+  const routesUrl = join(rootUrl, "routes");
+  const promises = globUrl(join(routesUrl, "**/*.{js,mjs,cjs}")).map(
+    async (modUrl) => {
+      const mod = await import(modUrl);
+      let path = join("/", relative(routesUrl, modUrl));
       path = path.substring(0, path.lastIndexOf("."));
-      const configuredPath = mod.path || (mod.default && mod.default.path);
-      if (configuredPath) {
-        if (isAbsolute(configuredPath)) path = configuredPath;
-        else path = join(path, "..", configuredPath);
+      const pathOverride = mod.path || (mod.default && mod.default.path);
+      if (pathOverride) {
+        if (isAbsolute(pathOverride)) path = pathOverride;
+        else path = join(path, "..", pathOverride);
       } else if (path.endsWith("index")) {
         path = path.substring(0, path.length - 5);
       }
+      console.log(path);
 
       const middleware = [
         ...(mod.middleware || []),
         ...((mod.default && mod.default.middleware) || []),
       ];
-      if (middleware.length)
-        app.use(
-          ...middleware.map((middleware) => async (req, res, next) => {
-            try {
-              const h = middleware;
-              await h(req, res, next);
-            } catch (e) {
-              next(e);
-            }
-          })
-        );
-      for (let method of ["get", "post", "put", "patch", "delete"]) {
-        if (mod[method]) {
-          app[method](path, async (req, res, next) => {
-            try {
-              const h = mod[method].bind(mod);
-              await h(req, res, next);
-            } catch (e) {
-              next(e);
-            }
-          });
-        }
-        if (method in (mod.default || {})) {
-          app[method](path, async (req, res, next) => {
-            try {
-              const h = mod.default[method].bind(mod.default);
-              await h(req, res, next);
-            } catch (e) {
-              next(e);
-            }
-          });
-        }
-      }
-    });
+      if (middleware.length) app.use(path, ...middleware.map(wrapHandler));
 
-  try {
-    await Promise.all(promises);
-  } catch (e) {
-    console.log(e);
-  }
+      for (let method of ["get", "post", "put", "patch", "delete"]) {
+        if (mod[method]) app[method](path, wrapHandler(mod[method]));
+        if (method in (mod.default || {}))
+          app[method](path, wrapHandler(mod.default[method]));
+      }
+    }
+  );
+
+  await Promise.all(promises).catch((e) => console.log(e));
 
   const port = Number.parseInt(process.env.PORT) || 3000;
   const server = app.listen(port);
